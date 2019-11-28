@@ -1,11 +1,8 @@
-
-<html lang="en">
-<script src="https://cdn.apple-cloudkit.com/ck/2/cloudkit.js" async></script>
-</html>
 "use strict";
 //Setup Cloudkit
 var receiver = "";
-// window.addEventListener('cloudkitloaded', function() {
+var Cloudkit = require("./cloudkit.js");
+window.addEventListener('cloudkitloaded', function() {
 	console.log("listening for cloudkitloaded");
 	CloudKit.configure({
 	    containers: [{
@@ -54,7 +51,7 @@ var receiver = "";
   		});
   	}
   	ko.applyBindings(new ReminderViewModel());
-
+});
 
 // console.log(self.items[0].fields.userTokenID.value)
 console.log(receiver);

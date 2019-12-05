@@ -1,14 +1,30 @@
 {
   "name": "server-fellowcity",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-cloudkit-js": "curl https://cdn.apple-cloudkit.com/ck/1/cloudkit.js > cloudkit.js",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "apn": "^2.2.0"
-  }
+    "apn": "^2.2.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql": "^2.17.1",
+    "node-fetch": "^1.7.3",
+    "nodemon": "^2.0.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khairaniummah/server-fellowcity.git"
+  },
+  "bugs": {
+    "url": "https://github.com/khairaniummah/server-fellowcity/issues"
+  },
+  "homepage": "https://github.com/khairaniummah/server-fellowcity#readme",
+  "description": ""
 }

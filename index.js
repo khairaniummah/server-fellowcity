@@ -2,6 +2,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 const mysql = require('mysql');
+const port = process.env.PORT || 3000;
+const http = require('http');
  
 // parse application/json
 app.use(bodyParser.json());
@@ -46,6 +48,8 @@ app.post('/api/user',(req, res) => {
     if(err) throw err;
     res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
   });
+  console.log("request:" ,req);
+  console.log(data);
 });
  
 //update product
@@ -65,8 +69,15 @@ app.delete('/api/products/:id',(req, res) => {
       res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
   });
 });
+
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/html');
+  res.end('<h1>Hello World</h1>');
+});
  
 //Server listening
-app.listen(3000,() =>{
-  console.log('Server started on port 3000...');
+server.listen(port,() =>{
+  console.log('Server running at port '+port);
 });

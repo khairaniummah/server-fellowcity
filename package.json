@@ -26,5 +26,6 @@
     "url": "https://github.com/khairaniummah/server-fellowcity/issues"
   },
   "homepage": "https://github.com/khairaniummah/server-fellowcity#readme",
-  "description": ""
+  "description": "",
+  "start": "node index.js"
 }

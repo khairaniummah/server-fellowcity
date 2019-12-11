@@ -16,14 +16,7 @@ const conn = mysql.createConnection({
   user: isDev ? 'root' : process.env.USER,
   password: isDev ? 'P@ssw0rd' :process.env.PASSWORD,
   database: isDev ? 'fellowcity' :process.env.DATABASE
-  // host: 'localhost',
-  // user: 'root',
-  // password: 'P@ssw0rd',
-  // database: 'fellowcity'
-  // host: 'lyl3nln24eqcxxot.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-  // user: 'p9by39ce6trid5ub',
-  // password: 'd6r4dnd17j29y8c1',
-  // database: 'ytw72rnbh6rr13cu'
+
 });
  
 //connect to database

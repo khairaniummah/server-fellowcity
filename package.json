@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install-cloudkit-js": "curl https://cdn.apple-cloudkit.com/ck/1/cloudkit.js > cloudkit.js",
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -26,6 +26,5 @@
     "url": "https://github.com/khairaniummah/server-fellowcity/issues"
   },
   "homepage": "https://github.com/khairaniummah/server-fellowcity#readme",
-  "description": "",
-  "start": "node index.js"
+  "description": ""
 }

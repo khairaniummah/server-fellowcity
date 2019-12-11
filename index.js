@@ -10,10 +10,14 @@ app.use(bodyParser.json());
  
 //create database connection
 const conn = mysql.createConnection({
-  host: 'lyl3nln24eqcxxot.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-  user: 'p9by39ce6trid5ub',
-  password: 'd6r4dnd17j29y8c1',
-  database: 'ytw72rnbh6rr13cu'
+  // host: 'lyl3nln24eqcxxot.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
+  host: process.env.HOST,
+  user: process.env.USER,
+  password: process.env.PASSWORD,
+  database: process.env.DATABASE
+  // user: 'p9by39ce6trid5ub',
+  // password: 'd6r4dnd17j29y8c1',
+  // database: 'ytw72rnbh6rr13cu'
 });
  
 //connect to database

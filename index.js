@@ -10,9 +10,9 @@ app.use(bodyParser.json());
  
 //create database connection
 const conn = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'P@ssw0rd',
+  host: 'us-cdbr-iron-east-05.cleardb.net',
+  user: 'heroku_aeb6839a146ecf2',
+  password: '21401150',
   database: 'fellowcity'
 });
  

@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install-cloudkit-js": "curl https://cdn.apple-cloudkit.com/ck/1/cloudkit.js > cloudkit.js",
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
   },
   "author": "",
   "license": "ISC",

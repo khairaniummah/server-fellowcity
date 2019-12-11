@@ -6,15 +6,21 @@ const port = process.env.PORT || 3000;
 const http = require('http');
  
 // parse application/json
-app.use(bodyParser.json());
+app.use(bodyParser.json()); 
+
+const isDev = process.env.NODE_ENV === 'development'
  
 //create database connection
 const conn = mysql.createConnection({
+  host: isDev ? 'localhost' : process.env.HOST,
+  user: isDev ? 'root' : process.env.USER,
+  password: isDev ? 'P@ssw0rd' :process.env.PASSWORD,
+  database: isDev ? 'fellowcity' :process.env.DATABASE
+  // host: 'localhost',
+  // user: 'root',
+  // password: 'P@ssw0rd',
+  // database: 'fellowcity'
   // host: 'lyl3nln24eqcxxot.cbetxkdyhwsb.us-east-1.rds.amazonaws.com',
-  host: process.env.HOST,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
-  database: process.env.DATABASE
   // user: 'p9by39ce6trid5ub',
   // password: 'd6r4dnd17j29y8c1',
   // database: 'ytw72rnbh6rr13cu'

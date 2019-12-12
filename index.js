@@ -141,6 +141,28 @@ app.get('/api/routes',(req, res) => {
   });
 });
 
+//get list stop all
+app.get('/api/stops/',(req, res) => {
+  let sql = "SELECT direction, stop_name, bus_code from stops join buses on stops.bus_id = buses.id order by bus_id, direction, order_no ASC";
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    res.send(JSON.stringify({"status": 200, "error": null, "response": _.groupBy(results, "bus_code", "direction")}));
+  });
+  console.log(sql);
+  // console.log(results.token_id);
+});
+
+// get stops, long, lat based on direction & bus_code
+app.get('/api/stops/:bus_id/:direction',(req, res) => {
+  let sql = "SELECT direction, stop_name, longitude, latitude, order_no from stops where bus_id = "+req.params.bus_id+" and direction = '"+req.params.direction+"' order by direction, order_no ASC";
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+  console.log(sql);
+  // console.log(results.token_id);
+});
+
 //-----------------------------------------------COMMUTE---------------------------------------------------------------------
 // 1. get list of bus
 app.get('/api/buses',(req, res) => {
@@ -207,21 +229,58 @@ app.post('/api/commute/',(req, res) => {
   console.log(data);
 });
 
+//-----------------------------------------------REMINDER------------------------------------------------------------------
+// 1. Add Reminder
+app.post('/api/reminder/add',(req, res) => {
+  let data = {user_id: req.body.user_id, stop_id: req.body.stop_id, stop_name: req.body.stop_name, bus_code: req.body.bus_code, 
+              direction: req.body.direction, interval_start: req.body.interval_start, interval_stop: req.body.interval_stop, 
+              time_before_arrival: req.body.time_before_arrival, repeat: req.body.repeat, is_active: 1,
+              created_at: moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')};
+  let sql = "INSERT INTO reminders SET ?";
+  let query = conn.query(sql, data,(err, results) => {
+    if(err) throw err;
+    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+  console.log("request:" ,req);
+  console.log(data);
+});
 
-//get list stop all
-app.get('/api/stops/',(req, res) => {
-  let sql = "SELECT direction, stop_name, bus_code from stops join buses on stops.bus_id = buses.id order by bus_id, direction, order_no ASC";
+// 2. Update is_active
+app.put('/api/reminder/update-active/:id',(req, res) => {
+  let sql = "UPDATE reminders SET stop_id ="+ req.body.stop_id+", stop_name ="+ req.body.stop_name+", bus_code ="+ req.body.bus_code +", direction = "+ req.body.direction +", interval_start = "+req.body.interval_start+", interval_stop = "+ req.body.interval_stop+
+  ", time_before_arrival = "+req.body.time_before_arrival+", repeat = "+req.body.repeat+", is_active='"+req.body.is_active+"', updated_at='"+moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')+
+            "'WHERE id="+req.params.id;
   let query = conn.query(sql, (err, results) => {
     if(err) throw err;
-    res.send(JSON.stringify({"status": 200, "error": null, "response": _.groupBy(results, "bus_code", "direction")}));
+    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+});
+
+//3. Update reminder all properties
+app.put('/api/reminder/update/:id',(req, res) => {
+  let sql = "UPDATE reminders SET is_active='"+req.body.is_active+"', updated_at='"+moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')+
+            "'WHERE id="+req.params.id;
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+});
+
+
+//4. Get reminder per user
+app.get('/api/reminder/user/:user_id',(req, res) => {
+  let sql = "SELECT * from reminder where user_id = "+req.params.user_id+" order by created_at DESC";
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
   });
   console.log(sql);
   // console.log(results.token_id);
 });
 
-// get stops, long, lat based on direction & bus_code
-app.get('/api/stops/:bus_id/:direction',(req, res) => {
-  let sql = "SELECT direction, stop_name, longitude, latitude, order_no from stops where bus_id = "+req.params.bus_id+" and direction = '"+req.params.direction+"' order by direction, order_no ASC";
+//5. Get reminder per id reminder
+app.get('/api/reminder/item/:reminder_id',(req, res) => {
+  let sql = "SELECT * from reminder where reminder_id = "+req.params.reminder_id+" ";
   let query = conn.query(sql, (err, results) => {
     if(err) throw err;
     res.send(JSON.stringify({"status": 200, "error": null, "response": results}));

@@ -67,30 +67,32 @@ function sendNotification(token, payload, alert){
 //------------------------------------------------------------------------------------------------------------
 //---------------------------------SEND NOTIFICATION----------------------------------------------------------
 // get list of notification 
-
-
 function getTodayNotificationList(){
   var today = 6;  //-- harinya (senin-selasa dst)
-  let sql = "SELECT * FROM notifications  WHERE day = "+today+" ORDER BY time ASC";
+  let sql = "SELECT * FROM notifications join reminders on reminders.id = notifications.reminder_id WHERE day = "+today+" and reminders.is_active = 1 ORDER BY time ASC";
   let query = conn.query(sql, (err, results) => {
     if(err) throw err;
     console.log(results);
-    return results;
+    sendAllNotification(results)
+    // return results;
     // return (JSON.stringify({"status": 200, "error": null, "response": results}));
   });
   console.log(today);
   console.log(sql);
 }
 
-let notificationList = getTodayNotificationList();
-console.log(notificationList);
+function formatTime(time) {
+  let formatted = time.split(':')
+  return { h: formatted[0], m: formatted[1], s: formatted[2]}
+}
 
-function sendAllNotification(){
+function sendAllNotification(notificationList){
   notificationList.forEach((item, index) => {
+    let parsedTime = formatTime(item.time)
     let data = {token: item.token_id, 
               payload: {'messageFrom': 'Khairani Ummah'}, 
               alert: "mamaa ngantuk",
-              time: `00 ${moment(item.time).format('mm')} ${moment(item.time).format('h')} * * *` };
+              time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}` };
     var cronJob = cron.job(data.time, function(){
       sendNotification(data.token, data.payload, data.alert);
       console.info('cron job completed');
@@ -100,8 +102,55 @@ function sendAllNotification(){
 });
 }
 
+//------------------------------------------------------------------------------------------------------------
+//-----------------CALCULATE REMINDER - NOTIFICATION------------------------------------
+// hitung exact time to send notification for each reminder based on schedule
+function calculateReminder(bus_id, direction, stop_id, time_before_arrival, interval_start, interval_stop, repeat){
+  var is_weekend = repeat == "weekend";
+  // get all schedule where kode bus = kode_bus dan arah = arah dan stop = stop and between interval - time-berfore-arrival --- (the breeze: 14:00, 15:00)
+
+  let sql = "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = "+bus_id+" and direction = '"+direction+"' and is_weekend = "+is_weekend+" and stop_id = "+stop_id+" and time_arrival < '"+interval_stop+"' and time_arrival > '"+interval_start+"' ";
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    console.log(results);
+    results.forEach((item, index) => {
+      let initialDate = new Date();
+      let time = formatTime(item.time_arrival)
+      console.log(time)
+      initialDate.setHours(Number(time.h),Number(time.m), Number(time.s), 0)
+      console.log(initialDate)
+      // let time = moment(item.time_arrival).substract(time_before_arrival, 'minute');
+      // console.log(time);
+    });
+    
+    // kurangin si schedule dengan time_before_arrival
 
 
+
+    // list of notification hour
+
+
+    // addNotification(results);
+    // return results;
+    // return (JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+
+  
+  // return jam
+}
+
+
+function addNotification(reminder_id, token_id, repeat){
+  // masukin calculateReminder ke tabel notification
+  // nyimpen jam (4) x jumlah harinya kan 
+}
+
+function updateNotifBasedOnCommute(){
+  // 
+}
+
+calculateReminder(1, 'depart', 2, 10, '10:00:00', '11:00:00', 'weekday');
+getTodayNotificationList()
 
 //------------------------------------------------------------------------------------------------------------
 // add row on Notification Table

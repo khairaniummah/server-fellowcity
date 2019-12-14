@@ -66,15 +66,42 @@ function sendNotification(token, payload, alert){
 
 //------------------------------------------------------------------------------------------------------------
 //---------------------------------SEND NOTIFICATION----------------------------------------------------------
-let data = {token: "71933426C6FE2904034D74EBDB22046766DEA156E078BC0A188E2B9472D388DC", 
+// get list of notification 
+
+
+function getTodayNotificationList(){
+  var today = 6;  //-- harinya (senin-selasa dst)
+  let sql = "SELECT * FROM notifications  WHERE day = "+today+" ORDER BY time ASC";
+  let query = conn.query(sql, (err, results) => {
+    if(err) throw err;
+    console.log(results);
+    return results;
+    // return (JSON.stringify({"status": 200, "error": null, "response": results}));
+  });
+  console.log(today);
+  console.log(sql);
+}
+
+let notificationList = getTodayNotificationList();
+console.log(notificationList);
+
+function sendAllNotification(){
+  notificationList.forEach((item, index) => {
+    let data = {token: item.token_id, 
               payload: {'messageFrom': 'Khairani Ummah'}, 
               alert: "mamaa ngantuk",
-              time: "00 34 22 * * *" };
-var cronJob = cron.job(data.time, function(){
-    sendNotification(data.token, data.payload, data.alert);
-    console.info('cron job completed');
-}); 
-cronJob.start();
+              time: `00 ${moment(item.time).format('mm')} ${moment(item.time).format('h')} * * *` };
+    var cronJob = cron.job(data.time, function(){
+      sendNotification(data.token, data.payload, data.alert);
+      console.info('cron job completed');
+    }); 
+    cronJob.start();
+    console.log(data.time);
+});
+}
+
+
+
 
 //------------------------------------------------------------------------------------------------------------
 // add row on Notification Table
@@ -234,7 +261,7 @@ app.post('/api/commute/',(req, res) => {
 app.post('/api/reminder/add',(req, res) => {
   let data = {user_id: req.body.user_id, stop_id: req.body.stop_id, stop_name: req.body.stop_name, bus_code: req.body.bus_code, 
               direction: req.body.direction, interval_start: req.body.interval_start, interval_stop: req.body.interval_stop, 
-              time_before_arrival: req.body.time_before_arrival, repeat: req.body.repeat, is_active: 1,
+              time_before_arrival: req.body.time_before_arrival, repeat: JSON.stringify(req.body.repeat), is_active: 1,
               created_at: moment(Date.now()).format('YYYY-MM-DD HH:mm:ss')};
   let sql = "INSERT INTO reminders SET ?";
   let query = conn.query(sql, data,(err, results) => {
@@ -288,10 +315,6 @@ app.get('/api/reminder/item/:reminder_id',(req, res) => {
   console.log(sql);
   // console.log(results.token_id);
 });
-
-
-
-
 
 
 

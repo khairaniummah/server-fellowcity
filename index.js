@@ -116,27 +116,22 @@ function calculateReminder(bus_id, direction, stop_id, time_before_arrival, inte
     results.forEach((item, index) => {
       let initialDate = new Date();
       let time = formatTime(item.time_arrival)
-      console.log(time)
+      // console.log(time)
       initialDate.setHours(Number(time.h),Number(time.m), Number(time.s), 0)
-      console.log(initialDate)
+       // console.log(moment(initialDate).format('HH:mm:ss'))
+       var x = moment(initialDate).subtract(time_before_arrival, 'm').format('HH:mm:ss')
+       console.log(x)
+       return x
+      // console.log(moment(initialDate.setHours(Number(time.h),Number(time.m), Number(time.s), 0)).format('HH:mm:ss'))
       // let time = moment(item.time_arrival).substract(time_before_arrival, 'minute');
       // console.log(time);
     });
-    
-    // kurangin si schedule dengan time_before_arrival
-
-
 
     // list of notification hour
 
 
     // addNotification(results);
-    // return results;
-    // return (JSON.stringify({"status": 200, "error": null, "response": results}));
   });
-
-  
-  // return jam
 }
 
 

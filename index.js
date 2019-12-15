@@ -18,7 +18,7 @@ const isDev = process.env.NODE_ENV === "development";
 const conn = mysql.createConnection({
   host: isDev ? "localhost" : process.env.HOST,
   user: isDev ? "root" : process.env.USER,
-  password: isDev ? "root" : process.env.PASSWORD,
+  password: isDev ? "P@ssw0rd" : process.env.PASSWORD,
   database: isDev ? "fellowcity" : process.env.DATABASE
 });
 
@@ -101,64 +101,85 @@ function sendAllNotification(notificationList) {
 //------------------------------------------------------------------------------------------------------------
 //-----------------CALCULATE REMINDER - NOTIFICATION------------------------------------
 // hitung exact time to send notification for each reminder based on schedule
-function calculateReminder(
-  bus_id,
-  direction,
-  stop_id,
-  time_before_arrival,
-  interval_start,
-  interval_stop,
-  repeat
-) {
-  var is_weekend = repeat == "weekend";
-  // get all schedule where kode bus = kode_bus dan arah = arah dan stop = stop and between interval - time-berfore-arrival --- (the breeze: 14:00, 15:00)
-
-  let sql =
-    "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
-    bus_id +
-    " and direction = '" +
-    direction +
-    "' and is_weekend = " +
-    is_weekend +
-    " and stop_id = " +
-    stop_id +
-    " and time_arrival < '" +
-    interval_stop +
-    "' and time_arrival > '" +
-    interval_start +
-    "' ";
-
-  let query = conn.query(sql, (err, results) => {
+function calculateReminder(reminder_id) {
+  let query1 = "SELECT * FROM reminders where id = "+reminder_id;
+  conn.query(query1, (err, reminderData) => {
     if (err) throw err;
+    // console.log(reminderData[0])
+    var is_weekend = reminderData[0].repeat == "weekend" || reminderData[0].repeat == "all";
+    var token_id = ''; //JANGAN LUPA ISSSIIIIIII!
+    var repeatDay = is_weekend ? [6,7] : reminderData[0].repeat == "weekday" ? [1, 2,3,4,5] : [1, 2,3,4,5,6,7];
 
-    // kurangin si schedule dengan time_before_arrival
-    let dataWithReminderTime = results.map(item => {
-      let calculation = calculateReminderTime(
-        item.time_arrival,
-        time_before_arrival
-      );
+    let sql =
+      "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
+      reminderData[0].bus_id +
+      " and direction = '" +
+      reminderData[0].direction +
+      "' and is_weekend = " +
+      is_weekend +
+      " and stop_id = " +
+      reminderData[0].stop_id +
+      " and time_arrival < '" +
+      reminderData[0].interval_stop +
+      "' and time_arrival > '" +
+      reminderData[0].interval_start +
+      "' ";
 
-      item.remindTime = calculation.remindTime;
-      item.remindTimeFull = calculation.remindTimeFull;
+    let query = conn.query(sql, (err, results) => {
+      if (err) throw err;
+      console.log(reminderData)
 
-      return item;
+      // kurangin si schedule dengan time_before_arrival
+      let dataWithReminderTime = results.map(item => {
+        let calculation = calculateReminderTime(
+          item.time_arrival,
+          reminderData[0].time_before_arrival
+        );
+        // item.remindTime = calculation.remindTime;
+        // item.remindTimeFull = calculation.remindTimeFull;
+
+        return calculation.remindTime;
+      });
+      let reminderTimeList = [];
+      repeatDay.map(day => {
+        dataWithReminderTime.map(time => {
+          reminderTimeList.push({day:day, time:time})
+        }) 
+      })
+
+      console.log(reminderTimeList);
+      addNotification(reminderData[0].reminder_id, token_id, reminderTimeList);
+      // console.log("REMINDER AT: ", dataWithReminderTime);
+      return dataWithReminderTime;
     });
-
-    console.log("REMINDER AT: ", dataWithReminderTime);
-    return dataWithReminderTime;
-  });
+  })
+  
 }
 
-function addNotification(reminder_id, token_id, repeat) {
+function addNotification(reminder_id, token_id, reminderTimeList) {
   // masukin calculateReminder ke tabel notification
   // nyimpen jam (4) x jumlah harinya kan
+  reminderTimeList.forEach(item => {
+    let data = {
+      reminder_id: reminder_id,
+      token_id: token_id,
+      day: item.day,
+      time: item.time,
+      created_at: moment(Date.now()).format("YYYY-MM-DD HH:mm:ss")
+    };
+    let sql = "INSERT INTO notifications SET ?";
+    let query = conn.query(sql, data, (err, results) => {
+      if (err) throw err;
+      return (JSON.stringify({ status: 200, error: null, response: results }));
+    });
+  });
 }
 
 function updateNotifBasedOnCommute() {
   //
 }
 
-calculateReminder(1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
+calculateReminder(1, 1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
 getTodayNotificationList();
 
 //------------------------------------------------------------------------------------------------------------

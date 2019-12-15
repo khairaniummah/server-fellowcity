@@ -7,6 +7,7 @@ const port = process.env.PORT || 3000;
 const cron = require("cron");
 const moment = require("moment");
 const _ = require("lodash");
+
 const { formatTime, calculateReminderTime } = require("./helper");
 
 // parse application/json
@@ -18,7 +19,7 @@ const isDev = process.env.NODE_ENV === "development";
 const conn = mysql.createConnection({
   host: isDev ? "localhost" : process.env.HOST,
   user: isDev ? "root" : process.env.USER,
-  password: isDev ? "P@ssw0rd" : process.env.PASSWORD,
+  password: isDev ? "root" : process.env.PASSWORD,
   database: isDev ? "fellowcity" : process.env.DATABASE
 });
 
@@ -102,13 +103,18 @@ function sendAllNotification(notificationList) {
 //-----------------CALCULATE REMINDER - NOTIFICATION------------------------------------
 // hitung exact time to send notification for each reminder based on schedule
 function calculateReminder(reminder_id) {
-  let query1 = "SELECT * FROM reminders where id = "+reminder_id;
+  let query1 = "SELECT * FROM reminders where id = " + reminder_id;
   conn.query(query1, (err, reminderData) => {
     if (err) throw err;
     // console.log(reminderData[0])
-    var is_weekend = reminderData[0].repeat == "weekend" || reminderData[0].repeat == "all";
-    var token_id = ''; //JANGAN LUPA ISSSIIIIIII!
-    var repeatDay = is_weekend ? [6,7] : reminderData[0].repeat == "weekday" ? [1, 2,3,4,5] : [1, 2,3,4,5,6,7];
+    var is_weekend =
+      reminderData[0].repeat == "weekend" || reminderData[0].repeat == "all";
+    var token_id = ""; //JANGAN LUPA ISSSIIIIIII!
+    var repeatDay = is_weekend
+      ? [6, 7]
+      : reminderData[0].repeat == "weekday"
+      ? [1, 2, 3, 4, 5]
+      : [1, 2, 3, 4, 5, 6, 7];
 
     let sql =
       "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
@@ -125,9 +131,12 @@ function calculateReminder(reminder_id) {
       reminderData[0].interval_start +
       "' ";
 
-    let query = conn.query(sql, (err, results) => {
+    console.log("SQL: ", sql);
+
+    conn.query(sql, (err, results) => {
       if (err) throw err;
-      console.log(reminderData)
+
+      console.log("RESULTS: ", results);
 
       // kurangin si schedule dengan time_before_arrival
       let dataWithReminderTime = results.map(item => {
@@ -135,25 +144,21 @@ function calculateReminder(reminder_id) {
           item.time_arrival,
           reminderData[0].time_before_arrival
         );
-        // item.remindTime = calculation.remindTime;
-        // item.remindTimeFull = calculation.remindTimeFull;
-
         return calculation.remindTime;
       });
+
       let reminderTimeList = [];
       repeatDay.map(day => {
         dataWithReminderTime.map(time => {
-          reminderTimeList.push({day:day, time:time})
-        }) 
-      })
+          reminderTimeList.push({ day: day, time: time });
+        });
+      });
 
-      console.log(reminderTimeList);
+      console.log("REMINDER LIST: ", reminderTimeList);
       addNotification(reminderData[0].reminder_id, token_id, reminderTimeList);
-      // console.log("REMINDER AT: ", dataWithReminderTime);
       return dataWithReminderTime;
     });
-  })
-  
+  });
 }
 
 function addNotification(reminder_id, token_id, reminderTimeList) {
@@ -170,7 +175,7 @@ function addNotification(reminder_id, token_id, reminderTimeList) {
     let sql = "INSERT INTO notifications SET ?";
     let query = conn.query(sql, data, (err, results) => {
       if (err) throw err;
-      return (JSON.stringify({ status: 200, error: null, response: results }));
+      return JSON.stringify({ status: 200, error: null, response: results });
     });
   });
 }

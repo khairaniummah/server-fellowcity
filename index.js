@@ -81,7 +81,7 @@ function getTodayNotificationList() {
 }
 
 function sendAllNotification(notificationList) {
-  notificationList.forEach((item, index) => {
+  notificationList.forEach(item => {
     let parsedTime = formatTime(item.time);
     let data = {
       token: item.token_id,
@@ -132,7 +132,7 @@ function calculateReminder(
     if (err) throw err;
 
     // kurangin si schedule dengan time_before_arrival
-    let dataWithReminderTime = results.map((item, index) => {
+    let dataWithReminderTime = results.map(item => {
       let calculation = calculateReminderTime(
         item.time_arrival,
         time_before_arrival
@@ -178,19 +178,6 @@ app.post("/notification", (req, res) => {
   console.log("request:", req);
   console.log(data);
 });
-
-function timeFormat(time) {
-  let separated = time.split(" ");
-  let part1 = separated[0].split("-");
-  let part2 = separated[1].split(":");
-  let year = Number(part1[0]);
-  let month = Number(part1[1]);
-  let date = Number(part1[2]);
-  let hour = Number(part1[0]);
-  let minute = Number(part1[1]);
-  let second = Number(part1[2]);
-  return { year, month, date, hour, minute, second };
-}
 
 // -----------------------------------------------QUERIES---------------------------------------------------------------------
 //add new user

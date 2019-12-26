@@ -359,22 +359,12 @@ app.get("/api/stops/:bus_id/:direction", (req, res) => {
 
 //3. get from schedule with parameter : stop_id & direction
 app.get("/api/schedule/stop/:stop_id", (req, res) => {
-  let sql =
-    "SELECT * from schedules where stop_id = " +
-    req.params.stop_id +
-    " order by order_no ASC";
+  let sql = "SELECT * from schedules where stop_id = " +req.params.stop_id;
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.send(
-      JSON.stringify({
-        status: 200,
-        error: null,
-        response: _.groupBy(results, "direction")
-      })
-    );
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
-  console.log(sql);
-  // console.log(results.token_id);
+  console.log("hay: " + req.params.stop_id);
 });
 
 //4. get from schedule with parameter : trip_id
@@ -382,7 +372,7 @@ app.get("/api/schedule/trip/:trip_id", (req, res) => {
   let sql =
     "SELECT * from schedules where trip_id = " +
     req.params.trip_id +
-    " order by order_no ASC";
+    " order by stop_id ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(
@@ -490,7 +480,7 @@ app.put("/api/reminder/update/:id", (req, res) => {
 //4. Get reminder per user
 app.get("/api/reminder/user/:user_id", (req, res) => {
   let sql =
-    "SELECT * from reminder where user_id = " +
+    "SELECT * from reminders where user_id = " +
     req.params.user_id +
     " order by created_at DESC";
   let query = conn.query(sql, (err, results) => {
@@ -504,7 +494,7 @@ app.get("/api/reminder/user/:user_id", (req, res) => {
 //5. Get reminder per id reminder
 app.get("/api/reminder/item/:reminder_id", (req, res) => {
   let sql =
-    "SELECT * from reminder where reminder_id = " +
+    "SELECT * from reminders where reminder_id = " +
     req.params.reminder_id +
     " ";
   let query = conn.query(sql, (err, results) => {

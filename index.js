@@ -73,7 +73,7 @@ function getTodayNotificationList() {
     if (err) throw err;
     console.log(results);
     sendAllNotification(results);
-    sendOneNotification();
+    // sendOneNotification();
     // return results;
     // return (JSON.stringify({"status": 200, "error": null, "response": results}));
   });
@@ -98,22 +98,22 @@ function sendAllNotification(notificationList) {
     console.log(data.time);
   });
 }
-function sendOneNotification(){
+// function sendOneNotification(){
   
-      let data = {
-        token: "734AF116339DB6746C2BE5455D2E30E8889B0893BD68FB65C83F6C45A8AAF83C",
-        payload: { messageFrom: "Khairani Ummah" },
-        alert: {
-         "title" : "It's time to go 🏃🏻‍♂️",
-         // "subtitle" : "This is awesome",
-         "body" : "Your bus is arriving in 10 minutes to The Breeze Stop" }
-        // time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}`
-      };
-        sendNotification(data.token, data.payload, data.alert);
-        console.info("hehe");
-      cronJob.start();
-      console.log("hey");
-}
+//       let data = {
+//         token: "734AF116339DB6746C2BE5455D2E30E8889B0893BD68FB65C83F6C45A8AAF83C",
+//         payload: { messageFrom: "Khairani Ummah" },
+//         alert: {
+//          "title" : "It's time to go 🏃🏻‍♂️",
+//          // "subtitle" : "This is awesome",
+//          "body" : "Your bus is arriving in 10 minutes to The Breeze Stop" }
+//         // time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}`
+//       };
+//         sendNotification(data.token, data.payload, data.alert);
+//         console.info("hehe");
+//       cronJob.start();
+//       console.log("hey");
+// }
 
 
 

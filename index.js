@@ -247,10 +247,10 @@ app.post("/api/user", (req, res) => {
 });
 
 //get user token ID based on uuid and latest on db
-app.get("/api/user-token/:uuid", (req, res) => {
+app.get("/api/user-token/", (req, res) => {
   let sql =
     "SELECT token_id FROM users WHERE uuid='" +
-    req.params.uuid +
+    req.body.uuid +
     "' ORDER BY created_at DESC LIMIT 1";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
@@ -273,7 +273,7 @@ app.get("/api/routes", (req, res) => {
 });
 
 //get list stop all
-app.get("/api/stops/", (req, res) => {
+app.get("/api/stops/all", (req, res) => {
   let sql =
     "SELECT direction, stop_name, bus_code from stops join buses on stops.bus_id = buses.id order by bus_id, direction, order_no ASC";
   let query = conn.query(sql, (err, results) => {
@@ -291,20 +291,20 @@ app.get("/api/stops/", (req, res) => {
 });
 
 // get stops, long, lat based on direction & bus_code
-app.get("/api/stops/:bus_id/:direction", (req, res) => {
-  let sql =
-    "SELECT direction, stop_name, longitude, latitude, order_no from stops where bus_id = " +
-    req.params.bus_id +
-    " and direction = '" +
-    req.params.direction +
-    "' order by direction, order_no ASC";
-  let query = conn.query(sql, (err, results) => {
-    if (err) throw err;
-    res.send(JSON.stringify({ status: 200, error: null, response: results }));
-  });
-  console.log(sql);
-  // console.log(results.token_id);
-});
+// app.get("/api/stops/:bus_id/:direction", (req, res) => {
+//   let sql =
+//     "SELECT direction, stop_name, longitude, latitude, order_no from stops where bus_id = " +
+//     req.params.bus_id +
+//     " and direction = '" +
+//     req.params.direction +
+//     "' order by direction, order_no ASC";
+//   let query = conn.query(sql, (err, results) => {
+//     if (err) throw err;
+//     res.send(JSON.stringify({ status: 200, error: null, response: results }));
+//   });
+//   console.log(sql);
+//   // console.log(results.token_id);
+// });
 
 //-----------------------------------------------COMMUTE---------------------------------------------------------------------
 // 1. get list of bus
@@ -317,10 +317,10 @@ app.get("/api/buses", (req, res) => {
 });
 
 // 2. get list stop based on routes (departure, return) -- selected bus_id
-app.get("/api/stops/:bus_id", (req, res) => {
+app.get("/api/stops/bus", (req, res) => {
   let sql =
     "SELECT direction, stop_name, id as stop_id from stops where bus_id = " +
-    req.params.bus_id +
+    req.body.bus_id +
     " order by direction, order_no ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
@@ -337,7 +337,7 @@ app.get("/api/stops/:bus_id", (req, res) => {
 });
 
 // 2b. get list stop based on routes (departure, return) -- selected bus_id & direction
-app.get("/api/stops2/", (req, res) => {
+app.get("/api/stops/direction/", (req, res) => {
   let sql =
     "SELECT direction, stop_name, id as stop_id from stops where bus_id = " +
     req.body.bus_id +
@@ -358,8 +358,9 @@ app.get("/api/stops2/", (req, res) => {
   // console.log(results.token_id);
 });
 
-app.get("/api/schedule/", (req, res) => {
-  let sql = "SELECT * from schedules";
+//get all schedules
+app.get("/api/schedule/all", (req, res) => {
+  let sql = "SELECT * from daily_schedules";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -368,21 +369,20 @@ app.get("/api/schedule/", (req, res) => {
 });
 
 
-//3. get from schedule with parameter : stop_id & direction
-app.get("/api/schedule/stop/:stop_id", (req, res) => {
-  let sql = "SELECT * from schedules where stop_id = " +req.params.stop_id;
+//3. get from schedule with parameter : stop_id
+app.get("/api/schedule/stop/", (req, res) => {
+  let sql = "SELECT * from daily_schedules where stop_id = " +req.body.stop_id;
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
-  console.log("hay: " + req.params.stop_id);
 });
 
 //4. get from schedule with parameter : trip_id
-app.get("/api/schedule/trip/:trip_id", (req, res) => {
+app.get("/api/schedule/trip/", (req, res) => {
   let sql =
-    "SELECT * from schedules where trip_id = " +
-    req.params.trip_id +
+    "SELECT * from daily_schedules where trip_id = " +
+    req.body.trip_id +
     " order by stop_id ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
@@ -397,6 +397,24 @@ app.get("/api/schedule/trip/:trip_id", (req, res) => {
   console.log(sql);
   // console.log(results.token_id);
 });
+
+// update dailyschedule
+app.put("/api/schedule/update/", (req, res) => {
+  let sql =
+    "UPDATE daily_schedules SET time_arrival = '" +
+    req.body.time_arrival +
+    "', updated_at='" +
+    moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
+    "'WHERE trip_id=" +
+    req.body.trip_id + 
+     " AND stop_id=" +
+    req.body.stop_id ;
+  let query = conn.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+});
+
 
 // 5. upload data check (naik turun)
 app.post("/api/commute/", (req, res) => {
@@ -442,8 +460,8 @@ app.post("/api/reminder/add", (req, res) => {
   console.log(data);
 });
 
-// 2. Update is_active
-app.put("/api/reminder/update-active/:id", (req, res) => {
+//3. Update reminder all properties
+app.put("/api/reminder/update/", (req, res) => {
   let sql =
     "UPDATE reminders SET stop_id =" +
     req.body.stop_id +
@@ -466,22 +484,22 @@ app.put("/api/reminder/update-active/:id", (req, res) => {
     "', updated_at='" +
     moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
     "'WHERE id=" +
-    req.params.id;
+    req.body.id_reminder;
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
   });
 });
 
-//3. Update reminder all properties
-app.put("/api/reminder/update/:id", (req, res) => {
+// 2. Update is_active
+app.put("/api/reminder/update-active/", (req, res) => {
   let sql =
     "UPDATE reminders SET is_active='" +
     req.body.is_active +
     "', updated_at='" +
     moment(Date.now()).format("YYYY-MM-DD HH:mm:ss") +
     "'WHERE id=" +
-    req.params.id;
+    req.body.id_reminder;
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
@@ -489,10 +507,10 @@ app.put("/api/reminder/update/:id", (req, res) => {
 });
 
 //4. Get reminder per user
-app.get("/api/reminder/user/:user_id", (req, res) => {
+app.get("/api/reminder/user/", (req, res) => {
   let sql =
     "SELECT * from reminders where user_id = " +
-    req.params.user_id +
+    req.body.user_id +
     " order by created_at DESC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
@@ -503,10 +521,10 @@ app.get("/api/reminder/user/:user_id", (req, res) => {
 });
 
 //5. Get reminder per id reminder
-app.get("/api/reminder/item/:reminder_id", (req, res) => {
+app.get("/api/reminder/item/", (req, res) => {
   let sql =
     "SELECT * from reminders where reminder_id = " +
-    req.params.reminder_id +
+    req.body.reminder_id +
     " ";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;

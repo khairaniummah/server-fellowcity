@@ -19,7 +19,7 @@ const isDev = process.env.NODE_ENV === "development";
 const conn = mysql.createConnection({
   host: isDev ? "localhost" : process.env.HOST,
   user: isDev ? "root" : process.env.USER,
-  password: isDev ? "root" : process.env.PASSWORD,
+  password: isDev ? "P@ssw0rd" : process.env.PASSWORD,
   database: isDev ? "fellowcity" : process.env.DATABASE
 });
 
@@ -198,7 +198,7 @@ function updateNotifBasedOnCommute() {
   //
 }
 
-calculateReminder(1, 1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
+// calculateReminder(1, 1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
 getTodayNotificationList();
 
 function getTokenById(user_id){
@@ -337,12 +337,12 @@ app.get("/api/stops/:bus_id", (req, res) => {
 });
 
 // 2b. get list stop based on routes (departure, return) -- selected bus_id & direction
-app.get("/api/stops/:bus_id/:direction", (req, res) => {
+app.get("/api/stops2/", (req, res) => {
   let sql =
     "SELECT direction, stop_name, id as stop_id from stops where bus_id = " +
-    req.params.bus_id +
+    req.body.bus_id +
     " and direction = '" +
-    req.params.direction +
+    req.body.direction +
     "' order by order_no ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
@@ -357,6 +357,16 @@ app.get("/api/stops/:bus_id/:direction", (req, res) => {
   console.log(sql);
   // console.log(results.token_id);
 });
+
+app.get("/api/schedule/", (req, res) => {
+  let sql = "SELECT * from schedules";
+  let query = conn.query(sql, (err, results) => {
+    if (err) throw err;
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+  });
+  console.log("hay: " + req.params.stop_id);
+});
+
 
 //3. get from schedule with parameter : stop_id & direction
 app.get("/api/schedule/stop/:stop_id", (req, res) => {

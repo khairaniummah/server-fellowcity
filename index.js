@@ -445,7 +445,7 @@ app.post("/api/reminder/add", (req, res) => {
     interval_start: req.body.interval_start,
     interval_stop: req.body.interval_stop,
     time_before_arrival: req.body.time_before_arrival,
-    repeats: JSON.stringify(req.body.repeats),
+    repeats: req.body.repeats,
     is_active: 1,
     created_at: moment(Date.now()).format("YYYY-MM-DD HH:mm:ss")
   };

@@ -324,15 +324,10 @@ app.get("/api/stops/bus/:bus_id", (req, res) => {
     " order by direction, order_no ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.send(
-      JSON.stringify({
-        status: 200,
-        error: null,
-        response: _.groupBy(results, "direction")
-      })
-    );
+    res.json({stops: results});
+    // console.log(_.groupBy(results, "direction"))
   });
-  console.log(sql);
+  // console.log(sql);
   // console.log(results.token_id);
 });
 
@@ -442,7 +437,6 @@ app.post("/api/reminder/add", (req, res) => {
     user_id: req.body.user_id,
     stop_id: req.body.stop_id,
     stop_name: req.body.stop_name,
-    bus_code: req.body.bus_code,
     direction: req.body.direction,
     interval_start: req.body.interval_start,
     interval_stop: req.body.interval_stop,

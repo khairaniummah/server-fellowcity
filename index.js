@@ -126,8 +126,8 @@ function calculateReminder(reminder_id) {
   conn.query(query1, (err, reminderData) => {
     if (err) throw err;
     // console.log(reminderData[0])
-    var is_weekend = reminderData[0].repeat == "weekend" || reminderData[0].repeat == "all";
-    var repeatDay = is_weekend ? [6,7] : reminderData[0].repeat == "weekday" ? [1, 2,3,4,5] : [1, 2,3,4,5,6,7];
+    var is_weekend = reminderData[0].repeats == "weekend" || reminderData[0].repeats == "all";
+    var repeatDay = is_weekend ? [6,7] : reminderData[0].repeats == "weekday" ? [1, 2,3,4,5] : [1, 2,3,4,5,6,7];
 
     let sql =
       "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
@@ -415,6 +415,9 @@ app.put("/api/schedule/update/", (req, res) => {
 app.post("/api/commute/", (req, res) => {
   let data = {
     user_id: req.body.user_id,
+    stop_name: req.body.stop_name,
+    direction: req.body.direction,
+    bus_code: req.body.bus_code,
     stop_id: req.body.stop_id,
     longitude: req.body.longitude,
     latitude: req.body.latitude,
@@ -435,13 +438,14 @@ app.post("/api/commute/", (req, res) => {
 app.post("/api/reminder/add", (req, res) => {
   let data = {
     user_id: req.body.user_id,
+    title: req.body.title,
     stop_id: req.body.stop_id,
     stop_name: req.body.stop_name,
     direction: req.body.direction,
     interval_start: req.body.interval_start,
     interval_stop: req.body.interval_stop,
     time_before_arrival: req.body.time_before_arrival,
-    repeat: JSON.stringify(req.body.repeat),
+    repeats: JSON.stringify(req.body.repeats),
     is_active: 1,
     created_at: moment(Date.now()).format("YYYY-MM-DD HH:mm:ss")
   };
@@ -471,8 +475,8 @@ app.put("/api/reminder/update/", (req, res) => {
     req.body.interval_stop +
     ", time_before_arrival = " +
     req.body.time_before_arrival +
-    ", repeat = " +
-    req.body.repeat +
+    ", repeats = " +
+    req.body.repeats +
     ", is_active='" +
     req.body.is_active +
     "', updated_at='" +

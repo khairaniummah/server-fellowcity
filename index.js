@@ -275,7 +275,7 @@ app.get("/api/routes", (req, res) => {
 //get list stop all
 app.get("/api/stops/all", (req, res) => {
   let sql =
-    "SELECT direction, stop_name, bus_code from stops join buses on stops.bus_id = buses.id order by bus_id, direction, order_no ASC";
+    "SELECT longitude, latitude, order_no, direction, stop_name, id as stop_id from stops join buses on stops.bus_id = buses.id order by bus_id, direction, order_no ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
     res.send(
@@ -319,7 +319,7 @@ app.get("/api/buses", (req, res) => {
 // 2. get list stop based on routes (departure, return) -- selected bus_id
 app.get("/api/stops/bus/:bus_id", (req, res) => {
   let sql =
-    "SELECT direction, stop_name, id as stop_id from stops where bus_id = " +
+    "SELECT longitude, latitude, order_no, direction, stop_name, id as stop_id from stops where bus_id = " +
     req.params.bus_id +
     " order by direction, order_no ASC";
   let query = conn.query(sql, (err, results) => {
@@ -334,7 +334,7 @@ app.get("/api/stops/bus/:bus_id", (req, res) => {
 // 2b. get list stop based on routes (departure, return) -- selected bus_id & direction
 app.get("/api/stops/direction/:bus_id/:direction", (req, res) => {
   let sql =
-    "SELECT direction, stop_name, id as stop_id from stops where bus_id = " +
+    "SELECT longitude, latitude, order_no, direction, stop_name, id as stop_id from stops where bus_id = " +
     req.params.bus_id +
     " and direction = '" +
     req.params.direction +

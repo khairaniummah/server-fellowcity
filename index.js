@@ -341,13 +341,7 @@ app.get("/api/stops/direction/:bus_id/:direction", (req, res) => {
     "' order by order_no ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.send(
-      JSON.stringify({
-        status: 200,
-        error: null,
-        response: _.groupBy(results, "direction")
-      })
-    );
+    res.json({stops: results});
   });
   console.log(sql);
   // console.log(results.token_id);
@@ -369,7 +363,7 @@ app.get("/api/schedule/stop/:stop_id", (req, res) => {
   let sql = "SELECT * from daily_schedules where stop_id = " +req.params.stop_id;
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+    res.json({schedules: results});
   });
 });
 
@@ -381,17 +375,25 @@ app.get("/api/schedule/trip/:trip_id", (req, res) => {
     " order by stop_id ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.send(
-      JSON.stringify({
-        status: 200,
-        error: null,
-        response: _.groupBy(results, "direction")
-      })
-    );
+    res.json({schedules: results});
   });
   console.log(sql);
   // console.log(results.token_id);
 });
+
+//BARU! get trip_id from schedule with parameter : stop_id & time _arrival
+app.get("/api/schedule/stop-time/:stop_id/:current_time", (req, res) => {
+  let sql =
+    "SELECT trip_id, time_arrival from daily_schedules where time_arrival >= '" + req.params.current_time + "' and stop_id = " + req.params.stop_id + " order by time_arrival asc limit 1 ";
+  let query = conn.query(sql, (err, results) => {
+    if (err) throw err;
+    res.json({nearest_time: results});
+  });
+  console.log(sql);
+  // console.log(results.token_id);
+});
+
+
 
 // update dailyschedule
 app.put("/api/schedule/update/", (req, res) => {

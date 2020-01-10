@@ -416,12 +416,13 @@ app.get("/api/schedule/trip/:trip_id", (req, res) => {
 });
 
 //BARU! get trip_id from schedule with parameter : stop_id & time _arrival
-app.get("/api/schedule/stop-time/:stop_id/:current_time", (req, res) => {
+// app.get("/api/schedule/stop-time/:stop_id/:current_time", (req, res) => {
+app.post("/api/schedule/stop-time/", (req, res) => {
   let sql =
-    "SELECT trip_id, time_arrival from daily_schedules where time_arrival >= '" + req.params.current_time + "' and stop_id = " + req.params.stop_id + " order by time_arrival asc limit 1 ";
+    "SELECT trip_id, time_arrival from daily_schedules where time_arrival >= '" + req.body.current_time + "' and stop_id = " + req.body.stop_id + " order by time_arrival asc limit 1 ";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.json({schedules: results});
+    res.json(results);
   });
   console.log(sql);
   // console.log(results.token_id);

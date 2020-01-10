@@ -65,20 +65,22 @@ function sendNotification(token, payload, alert) {
 //---------------------------------SEND NOTIFICATION----------------------------------------------------------
 // get list of notification
 function getTodayNotificationList() {
-  var today = 6; //-- harinya (senin-selasa dst)
+  let today = new Date();
+  let intToday = today.getDay();
+   //-- harinya (senin-selasa dst)
   let sql =
     "SELECT * FROM notifications join reminders on reminders.id = notifications.reminder_id WHERE day = " +
-    today +
+    intToday +
     " and reminders.is_active = 1 ORDER BY time ASC";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    console.log(results);
+    console.log("getTodayNotificationList: ", sql);
+    // console.log("apakah ini", results);
     sendAllNotification(results);
     // sendOneNotification();
     // return results;
     // return (JSON.stringify({"status": 200, "error": null, "response": results}));
   });
-  console.log(today);
   console.log(sql);
 }
 
@@ -88,7 +90,7 @@ function sendAllNotification(notificationList) {
     let data = {
       token: item.token_id,
       payload: { messageFrom: "Khairani Ummah" },
-      alert: "mamaa ngantuk",
+      alert: "",
       time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}`
     };
     var cronJob = cron.job(data.time, function() {
@@ -96,25 +98,25 @@ function sendAllNotification(notificationList) {
       console.info("cron job completed");
     });
     cronJob.start();
-    console.log(data.time);
+    // console.log("time", data.time);
   });
 }
-// function sendOneNotification(){
-  
-//       let data = {
-//         token: "734AF116339DB6746C2BE5455D2E30E8889B0893BD68FB65C83F6C45A8AAF83C",
-//         payload: { messageFrom: "Khairani Ummah" },
-//         alert: {
-//          "title" : "It's time to go 🏃🏻‍♂️",
-//          // "subtitle" : "This is awesome",
-//          "body" : "Your bus is arriving in 10 minutes to The Breeze Stop" }
-//         // time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}`
-//       };
-//         sendNotification(data.token, data.payload, data.alert);
-//         console.info("hehe");
-//       cronJob.start();
-//       console.log("hey");
-// }
+
+function sendOneNotification(){
+      let data = {
+        token: "734AF116339DB6746C2BE5455D2E30E8889B0893BD68FB65C83F6C45A8AAF83C",
+        payload: { messageFrom: "Khairani Ummah" },
+        alert: {
+         "title" : "Your bus is arriving in 30 minutes 🏃🏻‍♂️",
+         // "subtitle" : "BRE: Breeze - Ice is coming",
+         "body" : "Prepare yourself! Your bus BRE: Breeze - Ice will arrive at The Breeze stop soon" }
+        // time: `00 ${parsedTime.m} ${parsedTime.h} * * ${item.day}`
+      };
+        sendNotification(data.token, data.payload, data.alert);
+        console.info("hehe");
+      // cronJob.start();
+      console.log("hey");
+}
 
 
 
@@ -130,7 +132,7 @@ function calculateReminder(reminder_id) {
     var repeatDay = is_weekend ? [6,7] : reminderData[0].repeats == "weekday" ? [1, 2,3,4,5] : [1, 2,3,4,5,6,7];
 
     let sql =
-      "SELECT * FROM schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
+      "SELECT * FROM daily_schedules join trips on schedules.trip_id = trips.id where trips.bus_id = " +
       reminderData[0].bus_id +
       " and direction = '" +
       reminderData[0].direction +
@@ -168,11 +170,19 @@ function calculateReminder(reminder_id) {
       });
 
       console.log("REMINDER LIST: ", reminderTimeList);
-      addNotification(reminderData[0].reminder_id, token_id, reminderTimeList);
-
+      dropNotification(reminder_id, addNotification(reminderData[0].reminder_id, token_id, reminderTimeList));
       return dataWithReminderTime;
     });
   });
+}
+
+function dropNotification(reminder_id, callback) {
+  let sql = "DELETE FROM notifications WHERE reminder_id = " + reminder_id
+  let query = conn.query(sql, data, (err, results) => {
+      if (err) throw err;
+      callback();
+      // return JSON.stringify({ status: 200, error: null, response: results });
+    });
 }
 
 function addNotification(reminder_id, token_id, reminderTimeList) {
@@ -197,9 +207,33 @@ function addNotification(reminder_id, token_id, reminderTimeList) {
 function updateNotifBasedOnCommute() {
   //
 }
-
+// --------MAIN-----------
 // calculateReminder(1, 1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
 getTodayNotificationList();
+dailyCronJob();
+console.log("mantap")
+// --------MAIN-----------
+
+function dailyCronJob() {
+    var cronJob = cron.job('2 * * * * *', function() {
+      console.info("Daily cron job completed");
+      getDailyActiveReminder(calculateReminder);
+      console.log("mau pulang")
+    });
+    cronJob.start();
+}
+
+function getDailyActiveReminder(callback) {
+  // ambil semua active reminder
+  let sql = "SELECT id as reminder_id FROM reminders WHERE is_active = 1";
+  conn.query(sql, (err, result) => {
+    if (err) throw err;
+    result.forEach(reminder_id => {
+      callback(reminder_id)
+      console.log(reminder_id)
+    })
+  });
+}
 
 function getTokenById(user_id){
   let query1 = "SELECT token_id FROM users where id = "+user_id+" ORDER BY created_at DESC LIMIT 1";
@@ -387,7 +421,7 @@ app.get("/api/schedule/stop-time/:stop_id/:current_time", (req, res) => {
     "SELECT trip_id, time_arrival from daily_schedules where time_arrival >= '" + req.params.current_time + "' and stop_id = " + req.params.stop_id + " order by time_arrival asc limit 1 ";
   let query = conn.query(sql, (err, results) => {
     if (err) throw err;
-    res.json({nearest_time: results});
+    res.json({schedules: results});
   });
   console.log(sql);
   // console.log(results.token_id);

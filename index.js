@@ -210,7 +210,7 @@ function updateNotifBasedOnCommute() {
 // --------MAIN-----------
 // calculateReminder(1, 1, "depart", 2, 20, "10:00:00", "11:00:00", "weekday");
 getTodayNotificationList();
-dailyCronJob();
+// dailyCronJob();
 console.log("mantap")
 // --------MAIN-----------
 
